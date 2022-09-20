@@ -1,0 +1,32 @@
+Serverless architecture
+A dynamoDb with global secondary index set up, and two SAM endpoints for 
+read and write operations.
+
+Data can be stored in DynamoDB. It will consist of one table and items 
+in this table contains three attributes: userId, swipedRightCount and
+popularity.
+
+userId is a uuid generated when they sign up, this is 
+also the primary key of the table. swipedRightCount is the number of times
+a user is being swiped right. popularity is the swipedRightCount rank among
+all users. If a user is swiped right the most, its popularity is 1.
+
+A global secondary index is set up with datingId as the primary key that allows
+fast retrieval of suggestions. 
+
+Everyday at midnight, a cron job will scan all the items, rank all the users 
+and reindex the data into a new table with the updated popularity and reset 
+swipedRightCount.
+
+AWS SAM can be used to handle network requests and perform suggestion and 
+write operations.
+
+When a user request matches, an API gateway connected lambda function will 
+first retrieve the user's popularity via its userId, through the main index.
+Then calculate the matching popularity (user's popularity - 1, -2, and so on),
+and retrieve the user data through the secondary index, via popularity 
+primary key. 
+
+When a user swipes left, do nothing. When a user swipe right, another API gateway
+connected lambda will make update to the table main index, by retrieving the 
+profile of the user being swiped via userId, and increment the swipedRightCount.
