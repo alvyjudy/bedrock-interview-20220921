@@ -1,0 +1,39 @@
+First run a query to get all the duplicate rows by combining a sufficient
+number of columns, save the result in a separate table2
+
+Then delete them all the duplicates
+
+then reinsert from table2 to table1
+
+CREATE TABLE table1 (
+  col1 INT,
+  col2 TEXT,
+  col3 INT
+);
+
+CREATE TABLE table2 (
+  col1 INT,
+  col2 TEXT,
+  col3 INT
+);
+INSERT INTO table1 (col1, col2, col3) VALUES (2, 'bob', 10);
+INSERT INTO table1 (col1, col2, col3) VALUES (2, 'bob', 10);
+INSERT INTO table1 (col1, col2, col3) VALUES (3, 'alice', 12);
+
+INSERT INTO table2 SELECT col1, col2, col3 FROM table1 GROUP BY col1, col2, col3 HAVING COUNT(*) > 1;
+
+SELECT * FROM table1;
+SELECT * FROM table2;
+
+DELETE A.* FROM table1 A INNER JOIN table2 B
+ON  A.col1 = B.col1
+AND A.col2 = B.col2
+AND A.col3 = B.col3;
+
+SELECT * FROM table1;
+
+INSERT INTO table1 SELECT * FROM table2;
+
+SELECT * FROM table1;
+
+https://www.db-fiddle.com/
